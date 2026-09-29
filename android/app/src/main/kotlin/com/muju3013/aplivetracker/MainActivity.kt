@@ -1,4 +1,4 @@
-package com.example.ap_live_tracker
+package com.muju3013.aplivetracker
 
 import io.flutter.embedding.android.FlutterActivity
 

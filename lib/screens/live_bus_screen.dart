@@ -327,7 +327,7 @@ class _LiveBusScreenState extends State<LiveBusScreen>
       children: [
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.ap_live_tracker',
+          userAgentPackageName: 'com.muju3013.aplivetracker',
         ),
         if (loc != null)
           MarkerLayer(
