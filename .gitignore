@@ -1,0 +1,114 @@
+# ==================================================
+# AP LIVE TRACKER - GITIGNORE
+# ==================================================
+
+# ------------------------------
+# Miscellaneous
+# ------------------------------
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# ------------------------------
+# IntelliJ / Android Studio
+# ------------------------------
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# ------------------------------
+# VS Code
+# ------------------------------
+.vscode/
+
+# ------------------------------
+# Flutter / Dart / Pub
+# ------------------------------
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+.pub-cache/
+.pub/
+
+build/
+coverage/
+
+# ------------------------------
+# Flutter generated files
+# ------------------------------
+app.*.symbols
+app.*.map.json
+
+# ------------------------------
+# Android build outputs
+# ------------------------------
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# ------------------------------
+# APK / App Bundles
+# APK will be uploaded through GitHub Releases
+# ------------------------------
+*.apk
+*.aab
+
+# ------------------------------
+# Android local machine config
+# ------------------------------
+android/local.properties
+
+# ------------------------------
+# Signing keys / release secrets
+# NEVER PUSH THESE TO GITHUB
+# ------------------------------
+*.jks
+*.keystore
+key.properties
+android/key.properties
+
+# ------------------------------
+# Environment / Secrets
+# ------------------------------
+.env
+.env.*
+*.env
+
+# ------------------------------
+# Network captures
+# May contain API keys / tokens
+# ------------------------------
+*.har
+
+# ------------------------------
+# Temporary / Debug files
+# ------------------------------
+response.json
+scratch/
+tmp/
+temp/
+
+# ------------------------------
+# Widget Preview
+# ------------------------------
+.widget_preview/
+
+# ------------------------------
+# OS files
+# ------------------------------
+Thumbs.db
+desktop.ini
