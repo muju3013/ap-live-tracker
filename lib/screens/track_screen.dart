@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -90,12 +93,21 @@ class _TrackScreenState extends State<TrackScreen> {
       } else {
         _showSelectionBottomSheet(results);
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      final String safeMsg;
+      if (e is SocketException) {
+        safeMsg =
+            'Network connection unavailable. Please check your internet connection.';
+      } else if (e is TimeoutException) {
+        safeMsg = 'Vehicle tracking request timed out. Please try again.';
+      } else {
+        safeMsg =
+            'Vehicle search failed (${e.toString().replaceAll('Exception: ', '')}).';
+      }
       setState(() {
         _isSearching = false;
-        _errorMessage =
-            'Unable to search vehicle. Please check network connection.';
+        _errorMessage = safeMsg;
       });
     }
   }

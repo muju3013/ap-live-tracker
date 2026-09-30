@@ -37,6 +37,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: LiveBusScreen(
+          serviceDocId: '27092026_CT24_4_PILER',
           service: service,
           pollInterval: const Duration(seconds: 100),
         ),
@@ -73,6 +74,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: LiveBusScreen(
+          serviceDocId: '27092026_CT24_4_PILER',
           service: service,
           pollInterval: const Duration(seconds: 100),
         ),

@@ -71,18 +71,21 @@ class RecentTrackService {
       final prefs = await _getPrefs();
       final List<String>? rawList = prefs.getStringList(_key);
       if (rawList == null || rawList.isEmpty) {
-        return _getDefaultRecentTracks();
+        return [];
       }
       final items = <RecentTrackItem>[];
       for (final str in rawList) {
         try {
           final Map<String, dynamic> map = jsonDecode(str);
-          items.add(RecentTrackItem.fromJson(map));
+          final item = RecentTrackItem.fromJson(map);
+          if (item.serviceDocId.isNotEmpty) {
+            items.add(item);
+          }
         } catch (_) {}
       }
       return items.take(5).toList();
     } catch (_) {
-      return _getDefaultRecentTracks();
+      return [];
     }
   }
 
@@ -108,18 +111,5 @@ class RecentTrackService {
       final prefs = await _getPrefs();
       await prefs.remove(_key);
     } catch (_) {}
-  }
-
-  List<RecentTrackItem> _getDefaultRecentTracks() {
-    return [
-      RecentTrackItem(
-        vehicleNumber: 'AP39X6803',
-        serviceDocId: '27092026_CT24_4_PILER',
-        oprsNo: 'CT24/4',
-        serviceType: 'PALLEVELUGU',
-        routeSummary: 'CHITTOOR → PILER',
-        lastTrackedAt: DateTime.now().subtract(const Duration(minutes: 15)),
-      ),
-    ];
   }
 }

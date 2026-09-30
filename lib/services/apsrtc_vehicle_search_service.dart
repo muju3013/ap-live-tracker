@@ -1,8 +1,24 @@
+import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'apsrtc_current_vehicle_trip_resolver.dart';
+
+class ApsrtcVehicleSearchException implements Exception {
+  final String message;
+  final int? statusCode;
+  final String? exceptionType;
+
+  ApsrtcVehicleSearchException(
+    this.message, {
+    this.statusCode,
+    this.exceptionType,
+  });
+
+  @override
+  String toString() => message;
+}
 
 class ApsrtcVehicleSearchResult {
   final String vehicleNumber;
@@ -111,6 +127,8 @@ class ApsrtcVehicleSearchService {
 
     final candidates = <String>{cleaned, rawVehicleNumber.trim().toUpperCase()};
     final List<ApsrtcVehicleSearchResult> allResults = [];
+    Object? lastError;
+    bool requestSucceeded = false;
 
     for (final vehNum in candidates) {
       final payload = {
@@ -129,6 +147,9 @@ class ApsrtcVehicleSearchService {
       };
 
       try {
+        debugPrint(
+          '[ApsrtcVehicleSearchService] POST $queryEndpoint for vehicle $vehNum',
+        );
         final response = await _client
             .post(
               Uri.parse(queryEndpoint),
@@ -137,7 +158,12 @@ class ApsrtcVehicleSearchService {
             )
             .timeout(const Duration(seconds: 10));
 
+        debugPrint(
+          '[ApsrtcVehicleSearchService] HTTP Status: ${response.statusCode}, Body Length: ${response.body.length}',
+        );
+
         if (response.statusCode == 200) {
+          requestSucceeded = true;
           final List decoded = jsonDecode(response.body);
           for (final item in decoded) {
             if (item is Map && item.containsKey('document')) {
@@ -153,10 +179,29 @@ class ApsrtcVehicleSearchService {
               }
             }
           }
+        } else {
+          lastError = ApsrtcVehicleSearchException(
+            'Firestore HTTP status code ${response.statusCode}',
+            statusCode: response.statusCode,
+          );
         }
-      } catch (_) {}
+      } catch (e) {
+        final isTimeout = e is TimeoutException;
+        debugPrint(
+          '[ApsrtcVehicleSearchService] Exception: type: ${e.runtimeType}, Timeout: $isTimeout, Message: $e',
+        );
+        lastError = e;
+      }
 
       if (allResults.isNotEmpty) break;
+    }
+
+    if (!requestSucceeded && allResults.isEmpty && lastError != null) {
+      if (lastError is ApsrtcVehicleSearchException) throw lastError;
+      throw ApsrtcVehicleSearchException(
+        'Vehicle search request failed: $lastError',
+        exceptionType: lastError.runtimeType.toString(),
+      );
     }
 
     if (allResults.isEmpty) return [];

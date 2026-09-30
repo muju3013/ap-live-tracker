@@ -22,7 +22,7 @@ class LiveBusScreen extends StatefulWidget {
 
   const LiveBusScreen({
     super.key,
-    this.serviceDocId = '27092026_CT24_4_PILER',
+    required this.serviceDocId,
     this.service,
     this.routeStopsService,
     this.pollInterval = const Duration(seconds: 10),

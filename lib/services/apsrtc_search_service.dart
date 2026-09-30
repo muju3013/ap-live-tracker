@@ -1,10 +1,23 @@
+import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/apsrtc_service_search_result.dart';
 import '../models/apsrtc_station.dart';
 import 'apsrtc_place_repository.dart';
+
+/// Exception thrown when APSRTC API search fails.
+class ApsrtcApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final String? exceptionType;
+
+  ApsrtcApiException(this.message, {this.statusCode, this.exceptionType});
+
+  @override
+  String toString() => message;
+}
 
 /// Service for handling APSRTC service searches against upstream API.
 class ApsrtcSearchService {
@@ -180,7 +193,8 @@ class ApsrtcSearchService {
 
     final headers = {
       'Content-Type': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       ...?_extraHeaders,
     };
 
@@ -188,6 +202,9 @@ class ApsrtcSearchService {
 
     for (int attempt = 1; attempt <= 2; attempt++) {
       try {
+        debugPrint(
+          '[ApsrtcSearchService] POST $servicesAllEndpoint (Attempt $attempt)',
+        );
         final response = await _client
             .post(
               Uri.parse(servicesAllEndpoint),
@@ -195,6 +212,10 @@ class ApsrtcSearchService {
               body: jsonEncode(payload),
             )
             .timeout(const Duration(seconds: 15));
+
+        debugPrint(
+          '[ApsrtcSearchService] HTTP Status: ${response.statusCode}, Body Length: ${response.body.length}',
+        );
 
         if (response.statusCode == 200) {
           final decoded = jsonDecode(response.body);
@@ -236,15 +257,39 @@ class ApsrtcSearchService {
             });
 
             return visibleList;
+          } else {
+            throw ApsrtcApiException(
+              'Unexpected JSON response format from APSRTC services API.',
+            );
+          }
+        } else {
+          debugPrint(
+            '[ApsrtcSearchService] HTTP error status code ${response.statusCode}',
+          );
+          if (attempt == 2) {
+            throw ApsrtcApiException(
+              'APSRTC server returned HTTP ${response.statusCode}',
+              statusCode: response.statusCode,
+            );
           }
         }
-      } catch (_) {
-        if (attempt == 2) rethrow;
+      } catch (e) {
+        final isTimeout = e is TimeoutException;
+        debugPrint(
+          '[ApsrtcSearchService] Attempt $attempt failed: Exception type: ${e.runtimeType}, Timeout: $isTimeout, Message: $e',
+        );
+        if (attempt == 2) {
+          if (e is ApsrtcApiException) rethrow;
+          throw ApsrtcApiException(
+            'Failed to load APSRTC services: $e',
+            exceptionType: e.runtimeType.toString(),
+          );
+        }
         await Future.delayed(const Duration(milliseconds: 500));
       }
     }
 
-    throw Exception(
+    throw ApsrtcApiException(
       'APSRTC /services/all API request failed for route ${resolvedFrom.placeName} -> ${resolvedTo.placeName}',
     );
   }

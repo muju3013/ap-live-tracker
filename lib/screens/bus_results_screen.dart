@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../models/apsrtc_service_search_result.dart';
@@ -67,9 +70,18 @@ class _BusResultsScreenState extends State<BusResultsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final String safeMsg;
+      if (e is SocketException) {
+        safeMsg =
+            'Unable to load APSRTC services. Network connection unavailable.';
+      } else if (e is TimeoutException) {
+        safeMsg = 'Unable to load APSRTC services. Connection timed out.';
+      } else {
+        safeMsg =
+            'Unable to load APSRTC services (${e.toString().replaceAll('Exception: ', '')}).';
+      }
       setState(() {
-        _errorMessage =
-            'Unable to load APSRTC services. Please check network connection.';
+        _errorMessage = safeMsg;
         _isLoading = false;
       });
     }

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../models/apsrtc_service_search_result.dart';
@@ -143,8 +146,18 @@ class _SearchScreenState extends State<SearchScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final String safeMsg;
+      if (e is SocketException) {
+        safeMsg =
+            'Network connection unavailable. Please check internet connection.';
+      } else if (e is TimeoutException) {
+        safeMsg = 'Connection timed out while fetching APSRTC services.';
+      } else {
+        safeMsg =
+            'Failed to fetch APSRTC services (${e.toString().replaceAll('Exception: ', '')}).';
+      }
       setState(() {
-        _errorMessage = 'Failed to fetch current APSRTC services. Please check network connection.';
+        _errorMessage = safeMsg;
         _isSearching = false;
       });
     }
